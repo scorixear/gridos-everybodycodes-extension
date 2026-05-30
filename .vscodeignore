@@ -6,3 +6,5 @@ tsconfig.json
 *.map
 *.vsix
 rules.md
+examples/**
+media/**

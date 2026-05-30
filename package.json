@@ -1,13 +1,17 @@
 {
-    "name": "gridec",
+    "name": "gridos-everybodycodes",
     "displayName": "GridOS - EverybodyCodes",
     "description": "Language support, run, and debug for GridOS (.gridec) programs — the 2D Turing-machine simulator by EverybodyCodes.",
     "version": "1.0.0",
-    "publisher": "Paul Keller",
+    "publisher": "PaulKeller",
     "author": {
-        "name": "Paul Keller"
+        "name": "PaulKeller"
     },
     "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/scorixear/gridos-everybodycodes-extension"
+    },
     "keywords": [
         "gridos",
         "gridec",

@@ -4,6 +4,8 @@ Language support, run, and debug for **GridOS** inside VS Code.
 
 > **GridOS** is a 2D Turing-machine simulator created by [EverybodyCodes](https://everybody.codes). In GridOS, one or more read/write heads move across a character grid following a set of user-defined rules. This extension lets you write, run, and debug GridOS programs without leaving VS Code.
 
+![Debug Example](media/debug-preview.gif)
+
 ---
 
 ## Features
@@ -26,6 +28,22 @@ Language support, run, and debug for **GridOS** inside VS Code.
 | `.grid`   | The grid — initial cell content and named head start positions |
 
 A `.grid` file must exist alongside every `.gridec` file with the same base name (e.g. `puzzle.gridec` + `puzzle.grid`).
+
+---
+
+## Syntax Highlighting
+
+Both file types receive full colour support. Shades depend on your active theme; the table below lists the semantic role of each token.
+
+### `.grid` files
+
+![alt text](media/grid.png)
+
+
+### `.gridec` files
+
+![alt text](media/gridec.png)
+
 
 ---
 
@@ -80,8 +98,8 @@ This grid has one row of 14 characters. Head label `A` starts at column 0 (the f
 
 Open any `.gridec` file. A single button appears in the editor title bar. Its icon reflects the last-used action:
 
-- **`▶` (play icon)** — last action was *Run*
-- **`⏵` (debug icon)** — last action was *Debug*
+- **![alt text](media/run.png)** — last action was *Run*
+- **![alt text](media/debug.png)** — last action was *Debug*
 
 Clicking the button opens a dropdown with two options:
 
