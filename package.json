@@ -3,9 +3,9 @@
     "displayName": "GridOS - EverybodyCodes",
     "description": "Language support, run, and debug for GridOS (.gridec) programs — the 2D Turing-machine simulator by EverybodyCodes.",
     "version": "1.0.0",
-    "publisher": "Scorix",
+    "publisher": "Paul Keller",
     "author": {
-        "name": "Scorix"
+        "name": "Paul Keller"
     },
     "license": "MIT",
     "keywords": [
