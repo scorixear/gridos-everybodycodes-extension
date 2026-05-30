@@ -1,0 +1,58 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "GridOS Program",
+    "scopeName": "source.gridec",
+    "fileTypes": [
+        "gridec"
+    ],
+    "patterns": [
+        {
+            "include": "#comment"
+        },
+        {
+            "include": "#heads_line"
+        },
+        {
+            "include": "#rule_line"
+        }
+    ],
+    "repository": {
+        "comment": {
+            "match": "//.*$",
+            "name": "comment.line.double-slash.gridec"
+        },
+        "heads_line": {
+            "comment": "HEADS <positions> — HEADS keyword shares state color; positions share move color",
+            "match": "^(HEADS)\\s+(\\S+)",
+            "captures": {
+                "1": {
+                    "name": "keyword.control.state.gridec"
+                },
+                "2": {
+                    "name": "constant.language.move.gridec"
+                }
+            }
+        },
+        "rule_line": {
+            "comment": "STATE READ NEXT-STATE WRITE MOVE — tokens may contain / visual separators",
+            "match": "^(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)",
+            "captures": {
+                "1": {
+                    "name": "keyword.control.state.gridec"
+                },
+                "2": {
+                    "name": "variable.parameter.read-write.gridec"
+                },
+                "3": {
+                    "name": "keyword.control.state.gridec"
+                },
+                "4": {
+                    "name": "variable.parameter.read-write.gridec"
+                },
+                "5": {
+                    "name": "constant.language.move.gridec"
+                }
+            }
+        }
+    }
+}

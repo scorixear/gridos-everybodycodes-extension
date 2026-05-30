@@ -1,0 +1,227 @@
+{
+    "name": "gridec",
+    "displayName": "GridOS - EverybodyCodes",
+    "description": "Language support, run, and debug for GridOS (.gridec) programs — the 2D Turing-machine simulator by EverybodyCodes.",
+    "version": "1.0.0",
+    "publisher": "Scorix",
+    "author": {
+        "name": "Scorix"
+    },
+    "license": "MIT",
+    "keywords": [
+        "gridos",
+        "gridec",
+        "turing machine",
+        "simulator",
+        "debugger"
+    ],
+    "categories": [
+        "Programming Languages",
+        "Debuggers"
+    ],
+    "engines": {
+        "vscode": "^1.75.0"
+    },
+    "activationEvents": [
+        "onLanguage:gridec",
+        "onDebug"
+    ],
+    "main": "./out/extension.js",
+    "contributes": {
+        "languages": [
+            {
+                "id": "gridec",
+                "extensions": [
+                    ".gridec"
+                ],
+                "aliases": [
+                    "GridOS Program",
+                    "gridec"
+                ]
+            },
+            {
+                "id": "grid",
+                "extensions": [
+                    ".grid"
+                ],
+                "aliases": [
+                    "GridOS Grid",
+                    "grid"
+                ]
+            }
+        ],
+        "grammars": [
+            {
+                "language": "gridec",
+                "scopeName": "source.gridec",
+                "path": "./syntaxes/gridec.tmLanguage.json"
+            },
+            {
+                "language": "grid",
+                "scopeName": "source.grid",
+                "path": "./syntaxes/grid.tmLanguage.json"
+            }
+        ],
+        "commands": [
+            {
+                "command": "gridec.run",
+                "title": "Run GridOS Program",
+                "icon": "$(play)"
+            },
+            {
+                "command": "gridec.debug",
+                "title": "Debug GridOS Program",
+                "icon": "$(debug-alt)"
+            },
+            {
+                "command": "gridec.setRun",
+                "title": "Run GridOS Program"
+            },
+            {
+                "command": "gridec.setDebug",
+                "title": "Debug GridOS Program"
+            }
+        ],
+        "submenus": [
+            {
+                "id": "gridec.runMenu",
+                "label": "GridOS",
+                "icon": "$(play)"
+            },
+            {
+                "id": "gridec.debugMenu",
+                "label": "GridOS",
+                "icon": "$(debug-alt)"
+            }
+        ],
+        "menus": {
+            "editor/title": [
+                {
+                    "submenu": "gridec.runMenu",
+                    "when": "resourceExtname == .gridec && gridec.mode != debug",
+                    "group": "navigation"
+                },
+                {
+                    "submenu": "gridec.debugMenu",
+                    "when": "resourceExtname == .gridec && gridec.mode == debug",
+                    "group": "navigation"
+                }
+            ],
+            "gridec.runMenu": [
+                {
+                    "command": "gridec.setRun",
+                    "group": "1_mode@1"
+                },
+                {
+                    "command": "gridec.setDebug",
+                    "group": "1_mode@2"
+                }
+            ],
+            "gridec.debugMenu": [
+                {
+                    "command": "gridec.setRun",
+                    "group": "1_mode@1"
+                },
+                {
+                    "command": "gridec.setDebug",
+                    "group": "1_mode@2"
+                }
+            ]
+        },
+        "configuration": {
+            "title": "GridOS",
+            "properties": {
+                "gridec.maxHeads": {
+                    "type": "integer",
+                    "default": 10,
+                    "minimum": 1,
+                    "description": "Maximum number of heads allowed in a GridOS program. See https://everybody.codes/gridos/tutorial for the GridOS language reference."
+                },
+                "gridec.maxStates": {
+                    "type": "integer",
+                    "default": 100,
+                    "minimum": 1,
+                    "description": "Maximum number of distinct states allowed in a GridOS program. GridOS is a simulator by EverybodyCodes (https://everybody.codes)."
+                },
+                "gridec.maxRules": {
+                    "type": "integer",
+                    "default": 1000,
+                    "minimum": 1,
+                    "description": "Maximum number of rules allowed in a GridOS program."
+                },
+                "gridec.maxSteps": {
+                    "type": "integer",
+                    "default": 100000,
+                    "minimum": 1,
+                    "description": "Maximum number of simulation steps before the run is aborted."
+                },
+                "gridec.maxProgramBytes": {
+                    "type": "integer",
+                    "default": 1000000,
+                    "minimum": 1,
+                    "description": "Maximum file size in bytes for a GridOS program."
+                }
+            }
+        },
+        "breakpoints": [
+            {
+                "language": "gridec"
+            }
+        ],
+        "debuggers": [
+            {
+                "type": "gridec",
+                "label": "GridOS",
+                "languages": [
+                    "gridec"
+                ],
+                "configurationAttributes": {
+                    "launch": {
+                        "required": [
+                            "program"
+                        ],
+                        "properties": {
+                            "program": {
+                                "type": "string",
+                                "description": "Absolute path to the .gridec file to debug.",
+                                "default": "${file}"
+                            }
+                        }
+                    }
+                },
+                "initialConfigurations": [
+                    {
+                        "type": "gridec",
+                        "request": "launch",
+                        "name": "GridOS Debug",
+                        "program": "${file}"
+                    }
+                ],
+                "configurationSnippets": [
+                    {
+                        "label": "GridOS: Debug current file",
+                        "description": "Debug the currently open .gridec file",
+                        "body": {
+                            "type": "gridec",
+                            "request": "launch",
+                            "name": "GridOS Debug",
+                            "program": "${file}"
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "package": "vsce package"
+    },
+    "devDependencies": {
+        "@types/node": "^20.0.0",
+        "@types/vscode": "^1.75.0",
+        "@vscode/vsce": "^3.0.0",
+        "typescript": "^5.0.0"
+    }
+}

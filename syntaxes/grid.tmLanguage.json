@@ -1,0 +1,38 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "GridOS Grid",
+    "scopeName": "source.grid",
+    "fileTypes": [
+        "grid"
+    ],
+    "patterns": [
+        {
+            "include": "#section_keyword"
+        },
+        {
+            "include": "#position_entry"
+        }
+    ],
+    "repository": {
+        "section_keyword": {
+            "comment": "GRID and POSITIONS section headers",
+            "match": "^(GRID|POSITIONS)\\s*$",
+            "name": "keyword.control.section.grid"
+        },
+        "position_entry": {
+            "comment": "<label> <row> <col> entries in the POSITIONS section",
+            "match": "^([A-Za-z])\\s+(\\d+)\\s+(\\d+)\\s*$",
+            "captures": {
+                "1": {
+                    "name": "entity.name.label.grid"
+                },
+                "2": {
+                    "name": "constant.numeric.coordinate.grid"
+                },
+                "3": {
+                    "name": "constant.numeric.coordinate.grid"
+                }
+            }
+        }
+    }
+}
