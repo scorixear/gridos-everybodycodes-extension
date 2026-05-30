@@ -39,6 +39,32 @@ function charColumnsInToken(token: TokenInfo): number[] {
     return cols;
 }
 
+/// ---------------------------------------------------------------------------
+/// Rule Overlap Helpers
+/// ---------------------------------------------------------------------------
+
+/**
+ * Returns true if this rule collides with another rule in the state
+ */
+function doRulesOverlap(a:string, b:string) : boolean {
+    if (a.length !== b.length) {return false;} 
+    for (let i = 0; i < a.length; i++) {
+        if (!doCharactersOverlap(a[i], b[i])) {return false;} // If even one of the head's rules is different, then the pattern must be different and false can be returned.
+    }
+    return true; //If there were no differentiating factors, then the rule must have already been used.
+}
+
+/**
+ * Returns true if there is an overlap between two characters
+ */
+function doCharactersOverlap(a:string, b:string): boolean {
+    if (a === '*' || b === '*') {return true;} //If either is *, then the rule will always overlap
+    if (a === '!' && b !== '_') {return true;} //If one is a ! then the other has to be a _ for there to be no overlap
+    if (b === '!' && a !== '_') {return true;} //If one is a ! then the other has to be a _ for there to be no overlap
+    return a === b;  //If they're the same, they're the same
+}
+
+
 // ---------------------------------------------------------------------------
 // Public validator
 // ---------------------------------------------------------------------------
@@ -47,6 +73,8 @@ export function validateGridec(doc: vscode.TextDocument): vscode.Diagnostic[] {
     const diagnostics: vscode.Diagnostic[] = [];
     let headCount = -1;       // -1 = HEADS not yet seen
     let headsLineIndex = -1;
+    let previousLines: [string, string, number][] = []; // [State, Read, LineNumber]
+    let linesWithOverlaps = new Set<number>();
 
     for (let li = 0; li < doc.lineCount; li++) {
         const fullText = doc.lineAt(li).text;
@@ -122,6 +150,33 @@ export function validateGridec(doc: vscode.TextDocument): vscode.Diagnostic[] {
         }
 
         if (tokens.length < 5) { continue; }  // too few tokens — runtime will catch it
+        
+        // STATE (index 0) and READ (index 1): Rule must be unique
+        const overlapData = previousLines.filter(([state, read]) => state === tokens[0].value && doRulesOverlap(read, tokens[1].value)); // Check through previous lines
+        previousLines.push([tokens[0].value, tokens[1].value, li]); // Now that the checking has been done, push the line into the previousLines list
+        if (overlapData.length > 0){ // If there is an overlap
+            diagnostics.push(
+                new vscode.Diagnostic(
+                    new vscode.Range(li, 0, li, tokens[1].end),
+                    `READ overlaps with another READ in ${tokens[0].value}.`,
+                    vscode.DiagnosticSeverity.Error
+                )
+            );
+
+            linesWithOverlaps.add(li); // Vscode can put more than one error of the same type on each line, this stops that.
+
+            for (let [,, lineNumber] of overlapData){ // Highlight the previous lines which conflict
+                if (!linesWithOverlaps.has(lineNumber)){
+                    diagnostics.push(
+                        new vscode.Diagnostic(
+                            new vscode.Range(lineNumber, 0, lineNumber, tokens[1].end),
+                            `READ overlaps with another READ in ${tokens[0].value}.`,
+                            vscode.DiagnosticSeverity.Error
+                        )
+                    );
+                }
+            }
+        }
 
         // READ (index 1) and WRITE (index 3): length must equal headCount
         for (const idx of [1, 3] as const) {
