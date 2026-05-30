@@ -35,7 +35,7 @@
         },
         "rule_line": {
             "comment": "STATE READ NEXT-STATE WRITE MOVE — tokens may contain / visual separators",
-            "match": "^(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)",
+            "match": "^([^\\s]+)?(?:\\s+([^\\s]+))?(?:\\s+([^\\s]+))?(?:\\s+([^\\s]+))?(?:\\s+([^\\s]+))?",
             "captures": {
                 "1": {
                     "name": "keyword.control.state.gridec"
