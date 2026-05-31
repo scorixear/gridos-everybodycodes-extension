@@ -223,7 +223,7 @@
         "package": "vsce package"
     },
     "devDependencies": {
-        "@types/node": "^20.0.0",
+        "@types/node": "^25.9.1",
         "@types/vscode": "^1.75.0",
         "@vscode/vsce": "^3.0.0",
         "typescript": "^5.0.0"
