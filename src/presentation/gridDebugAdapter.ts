@@ -1,8 +1,12 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { parseProgram, loadGrid, Simulator, SimulatorError, Rule, DEFAULT_LIMITS } from './simulator';
-import { writeln, clearTerminal, GREEN, RED, RESET } from './terminal';
+import Simulator from '../simulation/Simulation';
+import Terminal from './terminal';
+import SimulatorLimits from '../simulation/SimulatorLimits';
+import Rules from '../simulation/Rules';
+import Grid from '../simulation/Grid';
+import SimulatorError from '../simulation/SimulatorError';
 
 // ---------------------------------------------------------------------------
 // Minimal DAP type helpers (avoids a runtime dependency on @vscode/debugadapter)
@@ -26,7 +30,6 @@ export class GridDebugAdapter implements vscode.DebugAdapter {
     // session state
     private sim: Simulator | undefined;
     private gridecPath = '';
-    private rules: Rule[] = [];
     private breakpointLines = new Set<number>();
     private terminated = false;
 
@@ -34,13 +37,13 @@ export class GridDebugAdapter implements vscode.DebugAdapter {
     // vscode.DebugAdapter entry point
     // ---------------------------------------------------------------------------
 
-    handleMessage(message: Msg): void {
+    public handleMessage(message: Msg): void {
         if (message.type === 'request') {
             this._handleRequest(message as DapRequest);
         }
     }
 
-    dispose(): void {
+    public dispose(): void {
         this._emitter.dispose();
     }
 
@@ -106,11 +109,12 @@ export class GridDebugAdapter implements vscode.DebugAdapter {
         const step = this.sim.steps;
         const heads = this.sim.heads.map(([r, c]) => `(${r},${c})`).join(', ');
         const header = `── Step: ${step}  State: ${state}  Heads: [${heads}] ──`;
+
         // Write to the shared PTY terminal so the output persists after the session ends
-        clearTerminal();
-        writeln(header);
-        writeln('');
-        writeln(this.sim.grid.toAsciiWithHeads(this.sim.heads));
+        Terminal.clearTerminal();
+        Terminal.writeln(header);
+        Terminal.writeln('');
+        Terminal.writeln(this.sim.grid.toAsciiWithHeads(this.sim.heads));
     }
 
     private _terminate(): void {
@@ -134,13 +138,13 @@ export class GridDebugAdapter implements vscode.DebugAdapter {
 
     private static _getLimits() {
         const cfg = vscode.workspace.getConfiguration('gridec');
-        return {
-            maxHeads: cfg.get('maxHeads', DEFAULT_LIMITS.maxHeads),
-            maxStates: cfg.get('maxStates', DEFAULT_LIMITS.maxStates),
-            maxRules: cfg.get('maxRules', DEFAULT_LIMITS.maxRules),
-            maxSteps: cfg.get('maxSteps', DEFAULT_LIMITS.maxSteps),
-            maxProgramBytes: cfg.get('maxProgramBytes', DEFAULT_LIMITS.maxProgramBytes),
-        } as typeof DEFAULT_LIMITS;
+        return SimulatorLimits.fromSettings(
+            cfg.get('maxHeads'),
+            cfg.get('maxStates'),
+            cfg.get('maxRules'),
+            cfg.get('maxSteps'),
+            cfg.get('maxProgramBytes')
+        );
     }
 
     private _launch(req: DapRequest, args: { program: string }): void {
@@ -163,10 +167,9 @@ export class GridDebugAdapter implements vscode.DebugAdapter {
             const programText = fs.readFileSync(this.gridecPath, 'utf8');
             const gridText = fs.readFileSync(gridPath, 'utf8');
             const limits = GridDebugAdapter._getLimits();
-            const { headsStr, rules } = parseProgram(programText, limits);
-            this.rules = rules;
-            const grid = loadGrid(gridText);
-            this.sim = new Simulator(rules, grid, headsStr, limits.maxSteps);
+            const rules = Rules.fromText(programText, limits);
+            const grid = Grid.fromText(gridText);
+            this.sim = Simulator.fromRulesAndGrid(rules, grid, limits);
             this._sendResponse(req, {});
         } catch (err) {
             const msg = err instanceof SimulatorError ? err.message : String(err);
@@ -181,7 +184,7 @@ export class GridDebugAdapter implements vscode.DebugAdapter {
         if (args.source?.path === this.gridecPath) {
             this.breakpointLines.clear();
             const verified = requested.map(bp => {
-                const isRuleLine = this.rules.some(r => r.lineNumber === bp.line);
+                const isRuleLine = this.sim?.rules.isRuleLine(bp.line) ?? false;
                 if (isRuleLine) { this.breakpointLines.add(bp.line); }
                 return { verified: isRuleLine, line: bp.line };
             });
@@ -275,8 +278,8 @@ export class GridDebugAdapter implements vscode.DebugAdapter {
                 this.sim.step();
                 if (this.sim.state === 'STOP') {
                     this._showGrid();
-                    writeln('');
-                    writeln(`${GREEN}Completed in ${this.sim.steps} step(s).${RESET}`);
+                    Terminal.writeln('');
+                    Terminal.writeln(`${Terminal.GREEN}Completed in ${this.sim.steps} step(s).${Terminal.RESET}`);
                     this._terminate();
                     return;
                 }
@@ -292,11 +295,11 @@ export class GridDebugAdapter implements vscode.DebugAdapter {
                 this.sim.step();
             }
             this._showGrid();
-            writeln('');
-            writeln(`${GREEN}Completed in ${this.sim.steps} step(s).${RESET}`);
+            Terminal.writeln('');
+            Terminal.writeln(`${Terminal.GREEN}Completed in ${this.sim.steps} step(s).${Terminal.RESET}`);
             this._terminate();
         } catch (err) {
-            writeln(`${RED}Error: ${err instanceof SimulatorError ? err.message : String(err)}${RESET}`);
+            Terminal.writeln(`${Terminal.RED}Error: ${err instanceof SimulatorError ? err.message : String(err)}${Terminal.RESET}`);
             this._terminate();
         }
     }
@@ -316,14 +319,14 @@ export class GridDebugAdapter implements vscode.DebugAdapter {
             this.sim.step();
             if (this.sim.state === 'STOP') {
                 this._showGrid();
-                writeln('');
-                writeln(`${GREEN}Completed in ${this.sim.steps} step(s).${RESET}`);
+                Terminal.writeln('');
+                Terminal.writeln(`${Terminal.GREEN}Completed in ${this.sim.steps} step(s).${Terminal.RESET}`);
                 this._terminate();
             } else {
                 this._stop('step');
             }
         } catch (err) {
-            writeln(`${RED}Error: ${err instanceof SimulatorError ? err.message : String(err)}${RESET}`);
+            Terminal.writeln(`${Terminal.RED}Error: ${err instanceof SimulatorError ? err.message : String(err)}${Terminal.RESET}`);
             this._terminate();
         }
     }

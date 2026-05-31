@@ -1,20 +1,24 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { parseProgram, loadGrid, Simulator, SimulatorError, DEFAULT_LIMITS } from './simulator';
-import { GridDebugAdapter } from './gridDebugAdapter';
-import { writeln, clearTerminal, showTerminal, GREY, GREEN, RED, RESET } from './terminal';
-import { validateGridec } from './diagnostics';
+import SimulatorLimits from './simulation/SimulatorLimits';
+import { Diagnostics } from './presentation/diagnostics';
+import Terminal from './presentation/terminal';
+import Rules from './simulation/Rules';
+import Grid from './simulation/Grid';
+import Simulator from './simulation/Simulation';
+import SimulatorError from './simulation/SimulatorError';
+import { GridDebugAdapter } from './presentation/gridDebugAdapter';
 
 function getLimits() {
     const cfg = vscode.workspace.getConfiguration('gridec');
-    return {
-        maxHeads: cfg.get('maxHeads', DEFAULT_LIMITS.maxHeads),
-        maxStates: cfg.get('maxStates', DEFAULT_LIMITS.maxStates),
-        maxRules: cfg.get('maxRules', DEFAULT_LIMITS.maxRules),
-        maxSteps: cfg.get('maxSteps', DEFAULT_LIMITS.maxSteps),
-        maxProgramBytes: cfg.get('maxProgramBytes', DEFAULT_LIMITS.maxProgramBytes),
-    } as typeof DEFAULT_LIMITS;
+    return SimulatorLimits.fromSettings(
+        cfg.get('maxHeads'),
+        cfg.get('maxStates'),
+        cfg.get('maxRules'),
+        cfg.get('maxSteps'),
+        cfg.get('maxProgramBytes'),
+    );
 }
 
 export function activate(context: vscode.ExtensionContext): void {
@@ -29,7 +33,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
     function refreshDiagnostics(doc: vscode.TextDocument): void {
         if (doc.languageId !== 'gridec') { return; }
-        diagCollection.set(doc.uri, validateGridec(doc));
+        diagCollection.set(doc.uri, Diagnostics.validateGridec(doc));
     }
 
     // Validate all already-open gridec documents immediately
@@ -62,14 +66,14 @@ export function activate(context: vscode.ExtensionContext): void {
         const gridPath = gridecPath.slice(0, -'.gridec'.length) + '.grid';
         const gridecName = path.basename(gridecPath);
 
-        await showTerminal();
-        clearTerminal();
+        await Terminal.showTerminal();
+        Terminal.clearTerminal();
 
-        writeln(`${GREY}Running ${gridecName} ...${RESET}`);
-        writeln('');
+        Terminal.writeln(`${Terminal.GREY}Running ${gridecName} ...${Terminal.RESET}`);
+        Terminal.writeln('');
 
         if (!fs.existsSync(gridPath)) {
-            writeln(`${RED}Error: Grid file not found: ${gridPath}${RESET}`);
+            Terminal.writeln(`${Terminal.RED}Error: Grid file not found: ${gridPath}${Terminal.RESET}`);
             return;
         }
 
@@ -78,20 +82,20 @@ export function activate(context: vscode.ExtensionContext): void {
             const gridText = fs.readFileSync(gridPath, 'utf8');
 
             const limits = getLimits();
-            const { headsStr, rules } = parseProgram(programText, limits);
-            const grid = loadGrid(gridText);
-            const sim = new Simulator(rules, grid, headsStr, limits.maxSteps);
+            const rules = Rules.fromText(programText, limits);
+            const grid = Grid.fromText(gridText);
+            const sim = Simulator.fromRulesAndGrid(rules, grid, limits);
 
             sim.run();
 
-            writeln(grid.toAscii());
-            writeln('');
-            writeln(`${GREEN}Completed in ${sim.steps} step(s).${RESET}`);
+            Terminal.writeln(grid.toAscii());
+            Terminal.writeln('');
+            Terminal.writeln(`${Terminal.GREEN}Completed in ${sim.steps} step(s).${Terminal.RESET}`);
         } catch (err) {
             if (err instanceof SimulatorError) {
-                writeln(`${RED}Error: ${err.message}${RESET}`);
+                Terminal.writeln(`${Terminal.RED}Error: ${err.message}${Terminal.RESET}`);
             } else {
-                writeln(`${RED}Unexpected error: ${String(err)}${RESET}`);
+                Terminal.writeln(`${Terminal.RED}Unexpected error: ${String(err)}${Terminal.RESET}`);
             }
         }
     });
@@ -112,10 +116,10 @@ export function activate(context: vscode.ExtensionContext): void {
 
         // Prepare the shared terminal BEFORE starting the session so the
         // debug adapter can write immediately when it receives the launch request.
-        await showTerminal();
-        clearTerminal();
-        writeln(`${GREY}Debugging ${path.basename(doc.fileName)} ...${RESET}`);
-        writeln('');
+        await Terminal.showTerminal();
+        Terminal.clearTerminal();
+        Terminal.writeln(`${Terminal.GREY}Debugging ${path.basename(doc.fileName)} ...${Terminal.RESET}`);
+        Terminal.writeln('');
 
         await vscode.debug.startDebugging(undefined, {
             type: 'gridec',
@@ -130,7 +134,7 @@ export function activate(context: vscode.ExtensionContext): void {
     // this listener fires after that switch and brings our terminal back.
     const sessionListener = vscode.debug.onDidStartDebugSession(session => {
         if (session.type === 'gridec') {
-            showTerminal();
+            Terminal.showTerminal();
         }
     });
 
