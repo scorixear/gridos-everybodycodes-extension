@@ -157,8 +157,8 @@ export default class Grid {
             headCount.set(key, (headCount.get(key) ?? 0) + 1);
         }
 
-        const BOLD_YELLOW = '\x1b[1:33m';
-        const BOLD_RED = '\x1b[1:31m';
+        const BOLD_YELLOW = '\x1b[1;33m';
+        const BOLD_RED = '\x1b[1;31m';
         const RESET = '\x1b[0m';
 
         const lines: string[] = [];

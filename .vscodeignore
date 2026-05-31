@@ -1,11 +1,12 @@
 src/**
+.vscode/**
 node_modules/**
+examples/**
+media/**
+.github/**
 tsconfig.json
 .vscodeignore
 .gitignore
 *.map
 *.vsix
 rules.md
-examples/**
-media/**
-.github/**
