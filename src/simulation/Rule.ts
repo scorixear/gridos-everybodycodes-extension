@@ -52,10 +52,10 @@ export default class Rule {
 
     public matches(cellValues: string[], state: string): boolean {
         if (this._state !== state) return false;
-        return this._reads.every((pattern, idx) => Rule.matchPattern(pattern, cellValues[idx]));
+        return this._reads.every((pattern, idx) => Rule._matchPattern(pattern, cellValues[idx]));
     }
 
-    private static matchPattern(pattern: string, value: string): boolean {
+    private static _matchPattern(pattern: string, value: string): boolean {
         if (pattern === '*') return true;
         if (pattern === '_') return value === ' ';
         if (pattern === '!') return value !== ' ';

@@ -37,13 +37,13 @@ export class GridDebugAdapter implements vscode.DebugAdapter {
     // vscode.DebugAdapter entry point
     // ---------------------------------------------------------------------------
 
-    handleMessage(message: Msg): void {
+    public handleMessage(message: Msg): void {
         if (message.type === 'request') {
             this._handleRequest(message as DapRequest);
         }
     }
 
-    dispose(): void {
+    public dispose(): void {
         this._emitter.dispose();
     }
 

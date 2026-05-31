@@ -15,7 +15,7 @@ export class Diagnostics {
             const commentIdx = fullText.indexOf('//');
             const lineText = commentIdx !== -1 ? fullText.slice(0, commentIdx) : fullText;
 
-            const tokens = this.tokenizeLine(lineText);
+            const tokens = this._tokenizeLine(lineText);
             if (tokens.length === 0) { continue; }
 
             // ---- HEADS line ---------------------------------------------------
@@ -106,7 +106,7 @@ export class Diagnostics {
                 ));
             } else {
                 // Per-character validation (only when length is correct)
-                const cols = this.charColumnsInToken(moveTok);
+                const cols = this._charColumnsInToken(moveTok);
                 const validMoves = new Set(Object.keys(Moves));
                 for (let i = 0; i < moveTok.value.length; i++) {
                     const ch = moveTok.value[i];
@@ -124,7 +124,7 @@ export class Diagnostics {
         return diagnostics;
     }
 
-    private static tokenizeLine(lineText: string): TokenInfo[] {
+    private static _tokenizeLine(lineText: string): TokenInfo[] {
         const tokens: TokenInfo[] = [];
         let i = 0;
         while (i < lineText.length) {
@@ -137,7 +137,7 @@ export class Diagnostics {
         return tokens;
     }
 
-    private static charColumnsInToken(token: TokenInfo): number[] {
+    private static _charColumnsInToken(token: TokenInfo): number[] {
         const cols: number[] = [];
         for (let i = 0; i < token.raw.length; i++) {
             if (token.raw[i] !== '/') { cols.push(token.start + i); }

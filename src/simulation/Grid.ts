@@ -68,7 +68,7 @@ export default class Grid {
                 const line = gridLines[row];
                 for (const col of activeCols) {
                     const char = col < line.length ? line[col] : ' ';
-                    grid.set(row, col, char);
+                    grid._set(row, col, char);
                 }
             }
         }
@@ -153,7 +153,7 @@ export default class Grid {
             if (col < minCol) minCol = col;
             if (col > maxCol) maxCol = col;
 
-            const key = this.key(row, col);
+            const key = this._key(row, col);
             headCount.set(key, (headCount.get(key) ?? 0) + 1);
         }
 
@@ -166,7 +166,7 @@ export default class Grid {
             let line = '';
             for (let col = minCol; col <= maxCol; col++) {
                 const char = this.get(row, col) ?? ' ';
-                const count = headCount.get(this.key(row, col)) ?? 0;
+                const count = headCount.get(this._key(row, col)) ?? 0;
                 if (count >= 2) {
                     line += BOLD_RED + (char == ' ' ? '█' : char) + RESET;
                 } else if (count === 1) {
@@ -181,7 +181,7 @@ export default class Grid {
     }
 
     public get(row: number, col: number): string {
-        return this._cells.get(this.key(row, col)) ?? ' ';
+        return this._cells.get(this._key(row, col)) ?? ' ';
     }
 
     public write(row: number, col: number, value: string) {
@@ -189,14 +189,14 @@ export default class Grid {
         let newValue = value;
         if (value === '*') newValue = currValue;
         if (value === '_') newValue = ' ';
-        this.set(row, col, newValue);
+        this._set(row, col, newValue);
     }
 
-    private key(row: number, col: number): string {
+    private _key(row: number, col: number): string {
         return `${row},${col}`;
     }
 
-    private set(row: number, col: number, value: string): void {
-        this._cells.set(this.key(row, col), value);
+    private _set(row: number, col: number, value: string): void {
+        this._cells.set(this._key(row, col), value);
     }
 }
