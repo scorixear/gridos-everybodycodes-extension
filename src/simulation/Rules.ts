@@ -13,7 +13,8 @@ export default class Rules {
     }
 
     public static fromText(text: string, limits: SimulatorLimits): Rules {
-        const bytes = Buffer.byteLength(text, 'utf8');
+        text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        const bytes = new TextEncoder().encode(text).length;
         if (bytes > limits.maxProgramBytes) throw new SimulatorError(`Program exceeds maximum size of ${limits.maxProgramBytes} bytes`);
 
         let heads: string | null = null;
