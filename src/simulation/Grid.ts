@@ -67,7 +67,7 @@ export default class Grid {
             for (let row = firstContent; row <= lastContent!; row++) {
                 const line = gridLines[row];
                 for (const col of activeCols) {
-                    const char = col < line.length ? line[col] : ' ';
+                    const char = col < line.length-1 ? line[col] : ' '; // line.length-1 to skip carriage return ('\r')
                     grid._set(row, col, char);
                 }
             }
