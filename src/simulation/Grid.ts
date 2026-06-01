@@ -11,7 +11,7 @@ export default class Grid {
     }
 
     public static fromText(text: string): Grid {
-        const lines = text.split('\n');
+        const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
 
         let gridKwLine: number | null = null;
         let posKwLine: number | null = null;
