@@ -2,7 +2,7 @@
     "name": "gridos-everybodycodes",
     "displayName": "GridOS - EverybodyCodes",
     "description": "Language support, run, and debug for GridOS (.gridec) programs — the 2D Turing-machine simulator by EverybodyCodes.",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "publisher": "PaulKeller",
     "author": {
         "name": "PaulKeller"
